@@ -2,7 +2,6 @@ package org.whthomas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClientAsync;
-import com.openai.client.okhttp.OpenAIOkHttpClientAsync;
 import com.openai.models.chat.completions.ChatCompletion;
 import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall;
@@ -28,12 +27,14 @@ public class CallMcpServerWithLLMExample {
 
         List<ChatCompletionTool> chatCompletionTools = McpToolExample.prepareChatCompletionTools(mcpClient);
 
+        // 构建ChatCompletionCreateParams对象，设置用户消息、模型、工具等参数
         ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
                 .addUserMessage(userMessage)
                 .model(chatModel)
                 .tools(chatCompletionTools)
                 .build();
 
+        // 调用OpenAI的Chat API
         openAIClient
                 .chat()
                 .completions()
@@ -52,6 +53,12 @@ public class CallMcpServerWithLLMExample {
 
     }
 
+    /**
+     * 通过MCP Client 调用MCP Server上的方法
+     *
+     * @param function LLM思考得到的期望被调用的函数信息（包括函数对应的参数）
+     * @return
+     */
     private String callFunction(ChatCompletionMessageToolCall.Function function) {
 
         try {
@@ -60,6 +67,7 @@ public class CallMcpServerWithLLMExample {
 
             McpSchema.CallToolResult result = mcpClient.callTool(new McpSchema.CallToolRequest(function.name(), toolParams));
 
+            // 将执行的结果返回
             return result.content().stream().map(Object::toString).collect(Collectors.joining());
 
         } catch (Exception ex) {
