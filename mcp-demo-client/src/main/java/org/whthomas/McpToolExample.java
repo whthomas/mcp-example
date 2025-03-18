@@ -1,13 +1,18 @@
 package org.whthomas;
 
-import io.modelcontextprotocol.client.McpClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openai.core.JsonValue;
+import com.openai.models.FunctionDefinition;
+import com.openai.models.FunctionParameters;
+import com.openai.models.chat.completions.ChatCompletionTool;
 import io.modelcontextprotocol.client.McpSyncClient;
-import io.modelcontextprotocol.client.transport.ServerParameters;
-import io.modelcontextprotocol.client.transport.StdioClientTransport;
-import io.modelcontextprotocol.spec.ClientMcpTransport;
 import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.Tool;
+import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 public class McpToolExample {
@@ -48,6 +53,59 @@ public class McpToolExample {
             System.out.println(template);
 
         });
+
+    }
+
+    public static List<ChatCompletionTool> prepareChatCompletionTools(McpSyncClient mcpClient) {
+
+        // List available tools
+        McpSchema.ListToolsResult tools = mcpClient.listTools();
+
+        return tools
+                .tools()
+                .stream()
+                .map(tool -> {
+
+                    return ChatCompletionTool
+                            .builder()
+                            .function(FunctionDefinition.builder()
+                                    .name(tool.name())
+                                    .description(tool.description())
+                                    .parameters(prepareFunctionParameters(tool))
+                                    .build()
+                            )
+                            .build();
+
+                })
+                .toList();
+
+    }
+
+    private static FunctionParameters prepareFunctionParameters(Tool tool) {
+
+        try {
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            String jsonString = objectMapper.writeValueAsString(tool.inputSchema());
+
+            JsonNode jsonNode = objectMapper.readTree(jsonString);
+
+            FunctionParameters.Builder paramsBuilder = FunctionParameters.builder();
+
+            jsonNode.fields().forEachRemaining(entry -> {
+
+                JsonValue value = JsonValue.fromJsonNode(entry.getValue());
+
+                paramsBuilder.putAdditionalProperty(entry.getKey(), value);
+
+            });
+
+            return paramsBuilder.build();
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

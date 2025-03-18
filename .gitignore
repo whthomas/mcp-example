@@ -37,3 +37,6 @@ build/
 ### Mac OS ###
 .DS_Store
 .idea/
+
+### Application Config ###
+mcp-demo-client/src/main/resources/mcp-config.properties

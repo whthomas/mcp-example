@@ -12,16 +12,16 @@ import java.time.Duration;
 public class McpClientExample {
 
     /**
-     * 创建一个MCP Client
+     * 创建一个Fetch MCP Client
      *
      * @return
      */
-    public static McpSyncClient createMcpClient() {
+    public static McpSyncClient createFetchMcpClient() {
 
         // 声明MCP Server的参数
         ServerParameters params = ServerParameters
                 .builder("node")
-                .args("/Users/xxxxxx/Documents/Cline/MCP/fetch-mcp/dist/index.js")
+                .args("/Users/whthomas/Documents/Cline/MCP/fetch-mcp/dist/index.js")
                 .build();
 
         // 声明MCP Server的连接方式

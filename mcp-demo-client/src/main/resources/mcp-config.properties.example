@@ -1,0 +1,6 @@
+# MCP 配置文件示例
+# 复制此文件为 mcp-config.properties 并填入实际的值
+
+# API 配置
+api.key=your_api_key_here
+api.endpoint=https://api.example.com/v1
